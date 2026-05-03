@@ -6,7 +6,6 @@ public class SelectionSort implements SortingStrategy {
             var min = source[i];
             for(int j = i + 1; j < source.length; j++){
                 if(min.compareTo(source[j]) > 0){
-                    System.out.println(source[i].compareTo(source[j]));
                     pos = j;
                     min = source[j];
                 }
