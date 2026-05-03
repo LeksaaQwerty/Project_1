@@ -1,24 +1,36 @@
-
-
 public class Car{
 
     private final String model;
     private final Integer hp;
     private final Integer yearOfProduction;
 
-    public Car(String model, Integer hp, Integer yearOfProduction){
-        this.model = model;
-        this.hp = hp;
-        this.yearOfProduction = yearOfProduction;
+
+    public Car(Builder builder){
+        this.model = builder.model;
+        this.hp = builder.hp;
+        this.yearOfProduction = builder.yearOfProduction;
     }
-    
+
+    public String getModel() {
+        return model;
+    }
+
+    public Integer getHp() {
+        return hp;
+    }
+
+    public Integer getYearOfProduction() {
+        return yearOfProduction;
+    }
+
 
     @Override
     public String toString() {
         return "Модель: " + model + ", мощность: " + hp + ", год производства: " + yearOfProduction; 
     }
 
-     public static class Builder {
+
+    public static class Builder {
 
         
         private final String model;
@@ -40,9 +52,22 @@ public class Car{
             return this;
         }
 
-        // public Car build() {
-        //     return new Car(this);
-        // }
+        public Car build() {
+
+            if(model==null || model.trim().isEmpty()) {
+                throw new IllegalStateException("Модель не может быть пустой! " + model);
+            }
+
+            if(yearOfProduction != null && (yearOfProduction<1885 || yearOfProduction > 2026)){
+                throw new IllegalArgumentException("Не корректный ввод года! " + yearOfProduction);
+            }
+
+            if(hp != null && hp<0){
+                throw new IllegalArgumentException("Мощность машины введена не корректно! " + hp);
+            }
+
+            return new Car(this);
+        }
     }
 
 }
