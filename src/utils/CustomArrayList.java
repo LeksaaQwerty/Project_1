@@ -11,6 +11,9 @@ public class CustomArrayList<T> {
 		this.size = 0;
 	}
 
+	/*
+	 * метод добавляет элемент в конец массива
+	 */
 	public boolean add(T t) {
 		if (size < array.length) {
 			array[size] = t;
@@ -23,6 +26,9 @@ public class CustomArrayList<T> {
 		return true;
 	}
 
+	/*
+	 * метод добавляет элемент в указанный индекс, элементы справа сдвигаются
+	 */
 	public boolean add(int index, T t) {
 		if (index < 0 || index > size) {
 			return false;
@@ -42,6 +48,10 @@ public class CustomArrayList<T> {
 		return true;
 	}
 
+	/*
+	 * метод сохраняет элемент в указанный индекс, предыдущие данные по этому
+	 * индексу затираются
+	 */
 	public boolean set(int index, T t) {
 		if (index < 0 || index >= size) {
 			return false;
@@ -59,6 +69,9 @@ public class CustomArrayList<T> {
 		return true;
 	}
 
+	/*
+	 * метод получает объект и удаляет один первый совпавший элемент
+	 */
 	public boolean deleteFirst(T t) {
 		for (int i = 0; i < size; i++) {
 			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
@@ -69,6 +82,9 @@ public class CustomArrayList<T> {
 		return false;
 	}
 
+	/*
+	 * метод получает объект и удаляет все совпавшие элементы
+	 */
 	public boolean deleteAll(T t) {
 		int counter = 0;
 		for (int i = 0; i < size; i++) {
@@ -84,6 +100,9 @@ public class CustomArrayList<T> {
 		return false;
 	}
 
+	/*
+	 * метод очищает массив путём создания нового пустого массива
+	 */
 	@SuppressWarnings("unchecked")
 	public CustomArrayList<T> clear() {
 		this.array = (T[]) new Object[array.length];
@@ -91,6 +110,9 @@ public class CustomArrayList<T> {
 		return this;
 	}
 
+	/*
+	 * метод возвращает элемент по указанному индексу
+	 */
 	public T get(int index) {
 		if (index >= 0 && index < size) {
 			return array[index];
@@ -98,6 +120,9 @@ public class CustomArrayList<T> {
 		throw new IndexOutOfBoundsException("Poterjalosja");
 	}
 
+	/*
+	 * метод получает объект и проверяет существуют ли такие объекты в массиве
+	 */
 	public boolean contains(T t) {
 		for (int i = 0; i < size; i++) {
 			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
@@ -107,6 +132,10 @@ public class CustomArrayList<T> {
 		return false;
 	}
 
+	/*
+	 * метод получает объект и если такой же объект существует в массиве, возвращает
+	 * индекс самого первого его расположения, иначе возвращает -1
+	 */
 	public int indexOf(T t) {
 
 		for (int i = 0; i < size; i++) {
@@ -117,10 +146,16 @@ public class CustomArrayList<T> {
 		return -1;
 	}
 
+	/*
+	 * метод возвращает количество объектов в массиве
+	 */
 	public int size() {
 		return size;
 	}
 
+	/*
+	 * метод возвращает информацию о том пустой массив или не пустой
+	 */
 	public boolean isEmpty() {
 		return size == 0;
 	}
