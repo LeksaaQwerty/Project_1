@@ -110,6 +110,20 @@ public class Main {
         }
     }
 
+    private static void saveToFile() {
+        if (currentCars.isEmpty()) {
+            System.out.println("Нет данных для сохранения!");
+            return;
+        }
+
+        try {
+            repository.save(currentCars);
+            System.out.println("Данные успешно сохранены в файл!");
+        } catch (RepositoryException e) {
+            System.out.println("Ошибка при сохранении: " + e.getMessage());
+        }
+    }
+
     private static void displayCars() {
         if (currentCars.isEmpty()) {
             System.out.println("Список автомобилей пуст.");
