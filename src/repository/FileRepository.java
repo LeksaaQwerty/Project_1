@@ -12,6 +12,10 @@ public class FileRepository implements Repository {
 
 	private static final String PATH = "files";
 
+	/*
+	 * метод получает имя списка(файла) и количество авто для чтения, формирует
+	 * массив по заданным параметрам и возвращает этот массив.
+	 */
 	@Override
 	public CustomArrayList<Car> readAll(int size, String name) throws RepositoryException {
 		Path path = Path.of(PATH, name + ".txt");
@@ -25,6 +29,10 @@ public class FileRepository implements Repository {
 		return cars;
 	}
 
+	/*
+	 * метод получает массив объектов и целевое имя файла для сохранения. Если такой
+	 * файл уже существует, то он будет затёрт новым.
+	 */
 	@Override
 	public boolean save(CustomArrayList<Car> list, String name) throws RepositoryException {
 		StringBuffer sb = new StringBuffer();
@@ -44,6 +52,10 @@ public class FileRepository implements Repository {
 
 	}
 
+	/*
+	 * метод получает один объект и имя файла для сохранения, если фал существует,
+	 * то объект дописывается в конец файла
+	 */
 	@Override
 	public boolean save(Car car, String name) throws RepositoryException {
 
@@ -61,6 +73,9 @@ public class FileRepository implements Repository {
 		return false;
 	}
 
+	/*
+	 * метод читает из файла каталог списков авто и возвращает этот каталог
+	 */
 	@Override
 	public CustomArrayList<String> readListOfCarLists() throws RepositoryException {
 		Path path = Path.of(PATH, "ListOfCarLists.txt");
@@ -72,14 +87,17 @@ public class FileRepository implements Repository {
 		}
 		String[] listNames = parseNames(listData);
 		CustomArrayList<String> arrayNames = new CustomArrayList<String>();
-		for(String s : listNames) {
-			if(s != null && !s.isBlank() && !s.isEmpty()) {
+		for (String s : listNames) {
+			if (s != null && !s.isBlank() && !s.isEmpty()) {
 				arrayNames.add(s);
 			}
 		}
 		return arrayNames;
 	}
-	
+
+	/*
+	 * метод сохраняет каталог списков в файл
+	 */
 	@Override
 	public boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException {
 		Path path = Path.of(PATH, "ListOfCarLists.txt");
@@ -90,7 +108,6 @@ public class FileRepository implements Repository {
 		}
 		return false;
 	}
-
 
 	private CustomArrayList<Car> parseCarsFromFile(String carsData, int size) {
 		CustomArrayList<Car> carList = new CustomArrayList<Car>();
@@ -137,5 +154,4 @@ public class FileRepository implements Repository {
 		}
 		return sb.toString();
 	}
-
 }

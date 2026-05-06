@@ -10,6 +10,9 @@ public class CarServiceImpl implements CarService {
 
 	private final Repository repository = new FileRepository();
 
+	/*
+	 * метод сохраняет в файл переданный список(carList) авто в файле с переданным именем(naneList)
+	 */
 	@Override
 	public boolean saveAll(CustomArrayList<Car> carList, String nameList) throws ServiceException {
 
@@ -20,6 +23,10 @@ public class CarServiceImpl implements CarService {
 		}
 	}
 
+	
+	/*
+	 * метод дописывает в файл с именем nameList переданный авто Car
+	 */
 	@Override
 	public boolean save(Car car, String nameList) throws ServiceException {
 
@@ -30,6 +37,9 @@ public class CarServiceImpl implements CarService {
 		}
 	}
 
+	/*
+	 * метод возвращает каталог списков авто
+	 */
 	@Override
 	public CustomArrayList<String> getListNames() throws ServiceException {
 		try {
@@ -39,6 +49,9 @@ public class CarServiceImpl implements CarService {
 		}
 	}
 
+	/*
+	 * метод сохраняет каталог списков авто
+	 */
 	@Override
 	public boolean saveCarListNames(CustomArrayList<String> carListNames) throws ServiceException {
 		
