@@ -10,30 +10,38 @@ import utils.CustomArrayList;
 
 public class FileRepository implements Repository {
 
-	private static final String PATH = "files/cars.txt";
+	private static final String PATH = "files";
 
+	/*
+	 * метод получает имя списка(файла) и количество авто для чтения, формирует
+	 * массив по заданным параметрам и возвращает этот массив.
+	 */
 	@Override
-	public CustomArrayList<Car> readAll() throws RepositoryException {
-		Path path = Path.of(PATH);
+	public CustomArrayList<Car> readAll(int size, String name) throws RepositoryException {
+		Path path = Path.of(PATH, name + ".txt");
 		String carsData;
 		try {
 			carsData = Files.readString(path);
 		} catch (IOException e) {
 			throw new RepositoryException("Файл данных не найден");
 		}
-		CustomArrayList<Car> cars = parseCarsFromFile(carsData);
+		CustomArrayList<Car> cars = parseCarsFromFile(carsData, size);
 		return cars;
 	}
 
+	/*
+	 * метод получает массив объектов и целевое имя файла для сохранения. Если такой
+	 * файл уже существует, то он будет затёрт новым.
+	 */
 	@Override
-	public boolean save(CustomArrayList<Car> list) throws RepositoryException {
+	public boolean save(CustomArrayList<Car> list, String name) throws RepositoryException {
 		StringBuffer sb = new StringBuffer();
 
 		for (int i = 0; i < list.size(); i++) {
 			sb.append(carToString(list.get(i))).append("///");
 		}
 
-		Path path = Path.of(PATH);
+		Path path = Path.of(PATH, name + ".txt");
 		try {
 			Files.writeString(path, sb.toString());
 		} catch (IOException e) {
@@ -44,11 +52,15 @@ public class FileRepository implements Repository {
 
 	}
 
+	/*
+	 * метод получает один объект и имя файла для сохранения, если фал существует,
+	 * то объект дописывается в конец файла
+	 */
 	@Override
-	public boolean save(Car car) throws RepositoryException {
+	public boolean save(Car car, String name) throws RepositoryException {
 
-		Path path = Path.of(PATH);
-		String carData = carToString(car);
+		Path path = Path.of(PATH, name + ".txt");
+		String carData = "///" + carToString(car);
 		Path answer;
 		try {
 			answer = Files.writeString(path, carData, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
@@ -61,11 +73,52 @@ public class FileRepository implements Repository {
 		return false;
 	}
 
-	private CustomArrayList<Car> parseCarsFromFile(String carsData) {
+	/*
+	 * метод читает из файла каталог списков авто и возвращает этот каталог
+	 */
+	@Override
+	public CustomArrayList<String> readListOfCarLists() throws RepositoryException {
+		Path path = Path.of(PATH, "ListOfCarLists.txt");
+		String listData;
+		try {
+			listData = Files.readString(path);
+		} catch (IOException e) {
+			throw new RepositoryException("Файл данных не найден");
+		}
+		String[] listNames = parseNames(listData);
+		CustomArrayList<String> arrayNames = new CustomArrayList<String>();
+		for (String s : listNames) {
+			if (s != null && !s.isBlank() && !s.isEmpty()) {
+				arrayNames.add(s);
+			}
+		}
+		return arrayNames;
+	}
+
+	/*
+	 * метод сохраняет каталог списков в файл
+	 */
+	@Override
+	public boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException {
+		Path path = Path.of(PATH, "ListOfCarLists.txt");
+		try {
+			Files.writeString(path, listNamesToString(carListNames));
+		} catch (IOException e) {
+			throw new RepositoryException("Не удалось сохранить");
+		}
+		return false;
+	}
+
+	@Override
+	public CustomArrayList<Car> readAll() throws RepositoryException {
+		return readAll(Integer.MAX_VALUE, "cars");
+	}
+
+	private CustomArrayList<Car> parseCarsFromFile(String carsData, int size) {
 		CustomArrayList<Car> carList = new CustomArrayList<Car>();
 		if (carsData != null && !carsData.isEmpty()) {
 			String[] cars = carsData.split("///");
-			for (int i = 0; i < cars.length; i++) {
+			for (int i = 0; i < cars.length && carList.size() < size; i++) {
 				Car car = parseCar(cars[i]);
 				carList.add(car);
 			}
@@ -95,4 +148,15 @@ public class FileRepository implements Repository {
 		return sb.toString();
 	}
 
+	private String[] parseNames(String listNames) {
+		return listNames.split("///");
+	}
+
+	private String listNamesToString(CustomArrayList<String> arrayNames) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < arrayNames.size(); i++) {
+			sb.append("///").append(arrayNames.get(i));
+		}
+		return sb.toString();
+	}
 }
