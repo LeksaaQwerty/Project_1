@@ -5,91 +5,96 @@ import java.util.Objects;
 
 public class Car {
 
-	private final String model;
-	private final Integer hp;
-	private final Integer yearOfProduction;
+  private final String model;
+  private final Integer hp;
+  private final Integer yearOfProduction;
 
-	private Car(Builder builder) {
-		this.model = builder.model;
-		this.hp = builder.hp;
-		this.yearOfProduction = builder.yearOfProduction;
-	}
+  public static int MAX_HP = 2000;
+  public static int MIN_HP = 0;
 
-	@Override
-	public String toString() {
-		return "Модель: " + model + ", мощность: " + hp + ", год производства: " + yearOfProduction;
-	}
+  public static int MAX_YEAR_OF_PRODUCTION = LocalDate.now().getYear();
+  public static int MIN_YEAR_OF_PRODUCTION = 1886;
 
-	public String getModel() {
-		return model;
-	}
+  private Car(Builder builder) {
+    this.model = builder.model;
+    this.hp = builder.hp;
+    this.yearOfProduction = builder.yearOfProduction;
+  }
 
-	public Integer getHp() {
-		return hp;
-	}
+  @Override
+  public String toString() {
+    return "Модель: " + model + ", мощность: " + hp + ", год производства: " + yearOfProduction;
+  }
 
-	public Integer getYearOfProduction() {
-		return yearOfProduction;
-	}
+  public String getModel() {
+    return model;
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(hp, model, yearOfProduction);
-	}
+  public Integer getHp() {
+    return hp;
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Car other = (Car) obj;
-		return Objects.equals(hp, other.hp) && Objects.equals(model, other.model)
-				&& Objects.equals(yearOfProduction, other.yearOfProduction);
-	}
+  public Integer getYearOfProduction() {
+    return yearOfProduction;
+  }
 
-	public static class Builder {
+  @Override
+  public int hashCode() {
+    return Objects.hash(hp, model, yearOfProduction);
+  }
 
-		private final String model;
-		private Integer hp = null;
-		private Integer yearOfProduction = null;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Car other = (Car) obj;
+    return Objects.equals(hp, other.hp) && Objects.equals(model, other.model)
+        && Objects.equals(yearOfProduction, other.yearOfProduction);
+  }
 
-		public Builder(String model) {
-			if (model == null || model.isEmpty() || model.isBlank()) {
-				throw new IllegalArgumentException("Модель не может быть пустой или содержать только пробелы");
-			} else {
-				this.model = model;
-			}
-		}
+  public static class Builder {
 
-		public Builder hp(int hp) {
-			if (hp <= 0 || hp > 2000) {
-				throw new IllegalArgumentException("Мощность должна быть больше 0 и не превышать 2000 л.с.");
-			} else {
-				this.hp = hp;
-			}
-			return this;
-		}
+    private final String model;
+    private Integer hp = null;
+    private Integer yearOfProduction = null;
 
-		public Builder yearOfProduction(int yearOfProduction) {
-			int currentYear = LocalDate.now().getYear();
+    public Builder(String model) {
+      if (model == null || model.isEmpty() || model.isBlank()) {
+        throw new IllegalArgumentException("Модель не может быть пустой или содержать только пробелы");
+      } else {
+        this.model = model;
+      }
+    }
 
-			if (yearOfProduction < 1886 || yearOfProduction > currentYear) {
-				throw new IllegalArgumentException(
-						"Год производства должен быть больше 1886 и меньше текущего года (" + currentYear + ")");
-			} else {
-				this.yearOfProduction = yearOfProduction;
-			}
-			return this;
-		}
+    public Builder hp(int hp) {
+      if (hp <= MIN_HP || hp > MAX_HP) {
+        throw new IllegalArgumentException("Мощность должна быть больше 0 и не превышать 2000 л.с.");
+      } else {
+        this.hp = hp;
+      }
+      return this;
+    }
 
-		public Car build() {
-			if (hp == null || yearOfProduction == null) {
-				throw new IllegalStateException("Мощность и год производства должны быть установлены");
-			}
-			return new Car(this);
-		}
-	}
+    public Builder yearOfProduction(int yearOfProduction) {
+      if (yearOfProduction < MIN_YEAR_OF_PRODUCTION || yearOfProduction > MAX_YEAR_OF_PRODUCTION) {
+        throw new IllegalArgumentException(
+            "Год производства должен быть больше " + MIN_YEAR_OF_PRODUCTION + " и меньше (" + MAX_YEAR_OF_PRODUCTION
+                + ")");
+      } else {
+        this.yearOfProduction = yearOfProduction;
+      }
+      return this;
+    }
+
+    public Car build() {
+      if (hp == null || yearOfProduction == null) {
+        throw new IllegalStateException("Мощность и год производства должны быть установлены");
+      }
+      return new Car(this);
+    }
+  }
 }
