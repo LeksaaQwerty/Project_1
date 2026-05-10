@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 
 import model.Car;
 import utils.CustomArrayList;
@@ -111,14 +112,14 @@ public class FileRepository implements Repository {
 
 	private CustomArrayList<Car> parseCarsFromFile(String carsData, int size) {
 		CustomArrayList<Car> carList = new CustomArrayList<Car>();
-		if (carsData != null && !carsData.isEmpty()) {
-			String[] cars = carsData.split("///");
-			for (int i = 0; i < cars.length && carList.size() < size; i++) {
-				Car car = parseCar(cars[i]);
-				carList.add(car);
-			}
+
+		if (carsData == null || carsData.trim().isEmpty()) {
+			return carList;
 		}
+		Arrays.stream(carsData.split("///")).limit(size).map(this::parseCar).forEach(carList::add);
+
 		return carList;
+
 	}
 
 	private Car parseCar(String carData) {
