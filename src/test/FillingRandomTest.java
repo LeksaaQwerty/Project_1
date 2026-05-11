@@ -136,18 +136,6 @@ class FillingRandomTest {
         }
     }
 
-    /*@Nested
-    @DisplayName("Негативные тесты")
-    class NegativeTests {
-
-        @Test
-        @DisplayName("fillOut() с отрицательным size должен выбросить исключение")
-        void fillOut_WithNegativeSize_ShouldThrowException() {
-            // When & Then
-            assertThrows(ServiceException.class,
-                    () -> fillingRandom.fillOut(-1, "anyName"));
-        }*/
-
         @Test
         @DisplayName("fillOut() с null name должен работать (name игнорируется)")
         void fillOut_WithNullName_ShouldWork() throws ServiceException {
