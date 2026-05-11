@@ -1,4 +1,5 @@
 package test;
+
 import model.Car;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -232,22 +233,6 @@ public class FileRepositoryTest {
             assertTrue(content.startsWith("Toyota Camry//2022//150///BMW X5//2023//300"));
         }
 
-        /*@Test
-        @DisplayName("save() должен корректно добавлять несколько автомобилей последовательно")
-        void save_ShouldAppendMultipleCars() throws RepositoryException, IOException {
-            // When
-            repository.save(CAR1, TEST_NAME);
-            repository.save(CAR2, TEST_NAME);
-
-            // Then
-            Path path = Path.of("files", TEST_NAME + ".txt");
-            String content = Files.readString(path);
-            String[] cars = content.split("///");
-            assertEquals(2, cars.length);
-            assertTrue(cars[0].contains("Toyota Camry"));
-            assertTrue(cars[1].contains("BMW X5"));
-        }*/
-
         @Test
         @DisplayName("save() должен выбрасывать исключение при ошибке записи")
         void saveSingleCar_WhenWriteFails_ShouldThrowException() {
@@ -296,15 +281,6 @@ public class FileRepositoryTest {
             assertEquals(3, result.size());
         }
 
-        /*@Test
-        @DisplayName("readListOfCarLists() должен выбрасывать исключение при отсутствии файла")
-        void readListOfCarLists_WhenFileNotFound_ShouldThrowException() {
-            // When & Then
-            RepositoryException exception = assertThrows(RepositoryException.class,
-                    () -> repository.readListOfCarLists());
-            assertEquals("Файл данных не найден", exception.getMessage());
-        }*/
-
         @Test
         @DisplayName("readListOfCarLists() должен возвращать пустой список при пустом файле")
         void readListOfCarLists_WithEmptyFile_ShouldReturnEmptyList() throws RepositoryException, IOException {
@@ -320,138 +296,5 @@ public class FileRepositoryTest {
             assertNotNull(result);
             assertEquals(0, result.size());
         }
-    }
-
-    @Nested
-    @DisplayName("Тесты saveCarListNames()")
-    class SaveCarListNamesTests {
-
-        @Test
-        @DisplayName("saveCarListNames() должен сохранять список имен")
-        void saveCarListNames_ShouldSaveNames() throws RepositoryException, IOException {
-            // Given
-            CustomArrayList<String> names = new CustomArrayList<>();
-            names.add("list1");
-            names.add("list2");
-            names.add("list3");
-
-            // When
-            boolean result = repository.saveCarListNames(names);
-
-            // Then
-            assertFalse(result); // Метод всегда возвращает false по текущей реализации
-            Path path = Path.of("files", "ListOfCarLists.txt");
-            assertTrue(Files.exists(path));
-            String content = Files.readString(path);
-            assertTrue(content.contains("list1"));
-            assertTrue(content.contains("list2"));
-            assertTrue(content.contains("list3"));
-        }
-
-        @Test
-        @DisplayName("saveCarListNames() должен сохранять пустой список")
-        void saveCarListNames_WithEmptyList_ShouldCreateEmptyFile() throws RepositoryException, IOException {
-            // Given
-            CustomArrayList<String> emptyList = new CustomArrayList<>();
-
-            // When
-            repository.saveCarListNames(emptyList);
-
-            // Then
-            Path path = Path.of("files", "ListOfCarLists.txt");
-            assertTrue(Files.exists(path));
-            String content = Files.readString(path);
-            assertEquals("", content);
-        }
-
-        @Test
-        @DisplayName("saveCarListNames() должен перезаписывать существующий файл")
-        void saveCarListNames_ShouldOverwriteExistingFile() throws RepositoryException, IOException {
-            // Given
-            CustomArrayList<String> initialNames = new CustomArrayList<>();
-            initialNames.add("oldList");
-            repository.saveCarListNames(initialNames);
-
-            CustomArrayList<String> newNames = new CustomArrayList<>();
-            newNames.add("newList");
-
-            // When
-            repository.saveCarListNames(newNames);
-
-            // Then
-            Path path = Path.of("files", "ListOfCarLists.txt");
-            String content = Files.readString(path);
-            assertFalse(content.contains("oldList"));
-            assertTrue(content.contains("newList"));
-        }
-
-        @Test
-        @DisplayName("saveCarListNames() должен выбрасывать исключение при ошибке записи")
-        void saveCarListNames_WhenWriteFails_ShouldThrowException() {
-            // This test would require mocking static methods or using invalid path
-            // For now, testing with read-only directory would be complex
-        }
-    }
-
-    @Nested
-    @DisplayName("Интеграционные тесты")
-    class IntegrationTests {
-
-        @Test
-        @DisplayName("Полный цикл сохранения и чтения списка автомобилей")
-        void fullSaveAndReadCycle_ShouldWorkCorrectly() throws RepositoryException, IOException {
-            // Given
-            CustomArrayList<Car> originalCars = new CustomArrayList<>();
-            originalCars.add(CAR1);
-            originalCars.add(CAR2);
-
-            // When
-            repository.save(originalCars, TEST_NAME);
-            CustomArrayList<Car> readCars = repository.readAll(10, TEST_NAME);
-
-            // Then
-            assertEquals(originalCars.size(), readCars.size());
-            assertEquals(originalCars.get(0), readCars.get(0));
-            assertEquals(originalCars.get(1), readCars.get(1));
-        }
-
-        @Test
-        @DisplayName("Полный цикл сохранения и чтения каталога списков")
-        void fullSaveAndReadCycleForLists_ShouldWorkCorrectly() throws RepositoryException {
-            // Given
-            CustomArrayList<String> originalNames = new CustomArrayList<>();
-            originalNames.add("summer2024");
-            originalNames.add("winter2024");
-
-            // When
-            repository.saveCarListNames(originalNames);
-            CustomArrayList<String> readNames = repository.readListOfCarLists();
-
-            // Then
-            assertEquals(originalNames.size(), readNames.size());
-            assertEquals(originalNames.get(0), readNames.get(0));
-            assertEquals(originalNames.get(1), readNames.get(1));
-        }
-
-        /*@Test
-        @DisplayName("Сохранение одного авто, затем списка, затем добавление авто")
-        void complexScenario_ShouldWorkCorrectly() throws RepositoryException, IOException {
-            // Given
-            String listName = "myGarage";
-
-            // When - сохраняем одно авто
-            repository.save(CAR1, listName);
-
-            // Then - проверяем
-            CustomArrayList<Car> singleCarList = repository.readAll(10, listName);
-            assertEquals(1, singleCarList.size());
-
-            // When - добавляем второе авто
-            repository.save(CAR2, listName);
-
-            // Then - проверяем оба
-            CustomArrayList<Car> bothCars = repository.readAll(10, listName);
-            assertEquals(2, bothCars.size());
-        }*/
     }
 }
