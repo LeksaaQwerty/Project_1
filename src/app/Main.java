@@ -22,6 +22,7 @@ public class Main {
   private static final Scanner scanner = new Scanner(System.in);
   private static CustomArrayList<Car> currentCars = new CustomArrayList<>();
   private static String currentFileName = "cars";
+  private static final CarServiceImpl carService = new CarServiceImpl();
 
   public static void main(String[] args) {
     System.out.println("Программа сортировки автомобилей");
@@ -117,12 +118,44 @@ public class Main {
     }
   }
 
-  private static void loadFromFile() {
-    System.out.print("Введите имя файла для загрузки: ");
-    String fileName = scanner.nextLine().trim();
+  private static String selectFileFromList(String action) {
+    try {
+      CustomArrayList<String> files = carService.getCarFilesList();
 
-    if (fileName.isEmpty()) {
-      System.out.println("Имя файла не может быть пустым!");
+      if (files.isEmpty()) {
+        System.out.println("Нет доступных файлов для " + action + "!");
+        return null;
+      }
+
+      System.out.println("\nДоступные файлы:");
+      for (int i = 0; i < files.size(); i++) {
+        System.out.println((i + 1) + ". " + files.get(i));
+      }
+
+      int choice = getIntInput("Выберите файл для " + action + " (0 - отмена): ");
+
+      if (choice == 0) {
+        return null;
+      }
+
+      if (choice >= 1 && choice <= files.size()) {
+        return files.get(choice - 1);
+      }
+
+      System.out.println("Неверный выбор!");
+      return null;
+
+    } catch (ServiceException e) {
+      System.out.println("Ошибка получения списка файлов: " + e.getMessage());
+      return null;
+    }
+  }
+
+  private static void loadFromFile() {
+    String fileName = selectFileFromList("загрузки");
+
+    if (fileName == null) {
+      System.out.println("Загрузка отменена.");
       return;
     }
 
@@ -158,15 +191,26 @@ public class Main {
       return;
     }
 
-    System.out.print("Введите имя файла для сохранения: ");
-    String fileName = scanner.nextLine().trim();
+    System.out.println("\n=== Сохранение данных ===");
+    System.out.println("1. Сохранить в существующий файл");
+    System.out.println("2. Сохранить в новый файл");
 
-    if (fileName.isEmpty()) {
-      fileName = currentFileName;
+    int choice = getIntInput("Ваш выбор: ");
+
+    String fileName;
+
+    if (choice == 1) {
+      fileName = selectFileFromList("сохранения");
+    } else {
+      System.out.print("Введите имя нового файла: ");
+      fileName = scanner.nextLine().trim();
+      if (fileName.isEmpty()) {
+        System.out.println("Имя файла не может быть пустым! Используем имя по умолчанию: cars");
+        fileName = "cars";
+      }
     }
 
     try {
-      CarServiceImpl carService = new CarServiceImpl();
       boolean success = carService.saveAll(currentCars, fileName);
 
       if (success) {
@@ -231,12 +275,13 @@ public class Main {
       case 4:
         comparator = CarComparator.byHp();
         sortStrategy = new EvenOddNumberSort(Car::getHp);
-        System.out.println("Чётные HP...");
+        System.out.println("Сортировка по мощности (чётные значения в начало)...");
         break;
       case 5:
         comparator = CarComparator.byYear();
         sortStrategy = new EvenOddNumberSort(Car::getYearOfProduction);
-        System.out.println("Чётные Year..."); break;
+        System.out.println("Сортировка по году (чётные значения в начало)...");
+        break;
       default:
         System.out.println("Неверный выбор!");
         return;

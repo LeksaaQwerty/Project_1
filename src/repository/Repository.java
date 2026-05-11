@@ -10,5 +10,5 @@ public interface Repository {
   boolean save (Car car, String name) throws RepositoryException;
   CustomArrayList<String> readListOfCarLists() throws RepositoryException;
   boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException;
-
+  CustomArrayList<String> getCarFilesList() throws RepositoryException;
 }

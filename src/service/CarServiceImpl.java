@@ -13,17 +13,17 @@ public class CarServiceImpl implements CarService {
 	/*
 	 * метод сохраняет в файл переданный список(carList) авто в файле с переданным именем(naneList)
 	 */
-	@Override
-	public boolean saveAll(CustomArrayList<Car> carList, String nameList) throws ServiceException {
+  @Override
+  public boolean saveAll(CustomArrayList<Car> carList, String nameList) throws ServiceException {
 
-		try {
-			return repository.save(carList, nameList);
-		} catch (RepositoryException e) {
-			throw new ServiceException("Не удалось сохранить");
-		}
-	}
+    try {
+      return repository.save(carList, nameList);
+    } catch (RepositoryException e) {
+      throw new ServiceException("Не удалось сохранить");
+    }
+  }
 
-	
+
 	/*
 	 * метод дописывает в файл с именем nameList переданный авто Car
 	 */
@@ -54,11 +54,21 @@ public class CarServiceImpl implements CarService {
 	 */
 	@Override
 	public boolean saveCarListNames(CustomArrayList<String> carListNames) throws ServiceException {
-		
+
 		try {
 			return repository.saveCarListNames(carListNames);
 		} catch (RepositoryException e) {
 			throw new ServiceException("Ошибка сохранения каталога");
 		}
 	}
+
+  @Override
+  public CustomArrayList<String> getCarFilesList() throws ServiceException {
+    try {
+      return repository.getCarFilesList();
+    } catch (RepositoryException e) {
+      throw new ServiceException("Ошибка получения списка файлов: " + e.getMessage());
+    }
+  }
+
 }

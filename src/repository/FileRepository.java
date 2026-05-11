@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 
 import model.Car;
 import utils.CustomArrayList;
@@ -187,5 +188,33 @@ public class FileRepository implements Repository {
       sb.append(arrayNames.get(i));
     }
     return sb.toString();
+  }
+
+
+  public CustomArrayList<String> getCarFilesList() throws RepositoryException {
+    CustomArrayList<String> fileNames = new CustomArrayList<>();
+    Path dir = Path.of(PATH);
+
+    try {
+      if (!Files.exists(dir)) {
+        Files.createDirectories(dir);
+        return fileNames;
+      }
+
+      try (Stream<Path> paths = Files.list(dir)) {
+        paths.filter(Files::isRegularFile)
+          .filter(path -> path.toString().endsWith(".txt"))
+          .filter(path -> !path.getFileName().toString().equals("ListOfCarLists.txt"))
+          .forEach(path -> {
+            String fileName = path.getFileName().toString();
+            fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+            fileNames.add(fileName);
+          });
+      }
+    } catch (IOException e) {
+      throw new RepositoryException("Ошибка при чтении списка файлов: " + e.getMessage());
+    }
+
+    return fileNames;
   }
 }
