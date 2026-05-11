@@ -1,4 +1,4 @@
-package sort;
+package service.sort;
 
 import java.util.Comparator;
 import model.Car;
