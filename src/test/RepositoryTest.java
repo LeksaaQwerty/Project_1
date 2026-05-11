@@ -89,7 +89,6 @@ class RepositoryTest {
             // Then
             assertNotNull(result);
             // Ожидаем, что метод либо вернет пустой список, либо выбросит исключение
-            // В зависимости от реализации
         }
     }
 
@@ -236,24 +235,6 @@ class RepositoryTest {
     @Nested
     @DisplayName("Тесты метода readListOfCarLists()")
     class ReadListOfCarListsTests {
-
-        /*@Test
-        @DisplayName("readListOfCarLists() должен возвращать список имен файлов")
-        void readListOfCarLists_ShouldReturnListOfNames() throws RepositoryException {
-            // Given
-            // Предварительно сохраняем несколько списков
-            CustomArrayList<Car> cars = new CustomArrayList<>();
-            cars.add(TEST_CAR);
-            repository.save(cars, "summer2024");
-            repository.save(cars, "winter2024");
-
-            // When
-            CustomArrayList<String> result = repository.readListOfCarLists();
-
-            // Then
-            assertNotNull(result);
-            assertTrue(result.size() >= 2);
-        }*/
 
         @Test
         @DisplayName("readListOfCarLists() должен возвращать пустой список, если нет сохраненных списков")
