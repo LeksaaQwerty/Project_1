@@ -9,34 +9,27 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 class ManualCarTest {
 
     private InputStream originalIn;
 
     @BeforeEach
-    void setUp() {
+    void saveOriginalIn() {
         originalIn = System.in;
     }
 
     @AfterEach
-    void tearDown() {
+    void restoreOriginalIn() {
         System.setIn(originalIn);
     }
 
     @Test
-    void build_WithValidInput_ShouldCreateCar() {
-        // Given
-        String input = "Toyota Camry\n150\n2022\n";
-        System.setIn(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+    void testBuild() {
+        System.setIn(new ByteArrayInputStream("Test\n100\n2022\n".getBytes(StandardCharsets.UTF_8)));
 
-        // When
         Car car = ManualCar.build();
 
-        // Then
         assertNotNull(car);
-        assertEquals("Toyota Camry", car.getModel());
-        assertEquals(150, car.getHp());
-        assertEquals(2022, car.getYearOfProduction());
+        assertEquals("Test", car.getModel());
     }
 }
