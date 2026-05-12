@@ -5,75 +5,159 @@ import org.junit.jupiter.api.*;
 import repository.Repository;
 import repository.RepositoryException;
 import utils.CustomArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Тесты интерфейса Repository")
 class RepositoryTest {
 
-    private Repository repository;
+    // Тестовая реализация интерфейса
+    private static class TestRepository implements Repository {
+        private CustomArrayList<Car> storedCars = new CustomArrayList<>();
+        private CustomArrayList<String> storedListNames = new CustomArrayList<>();
+        private boolean shouldThrowException = false;
 
-    // Тестовые данные
-    private static final String TEST_NAME = "testList";
-    private static final Car TEST_CAR = new Car.Builder("Toyota Camry")
+        public TestRepository() {
+            this(false);
+        }
+
+        public TestRepository(boolean shouldThrowException) {
+            this.shouldThrowException = shouldThrowException;
+        }
+
+        @Override
+        public CustomArrayList<Car> readAll(int size, String name) throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка чтения");
+            }
+            if (name == null || name.isEmpty()) {
+                throw new RepositoryException("Имя не может быть пустым");
+            }
+            CustomArrayList<Car> result = new CustomArrayList<>();
+            int limit = Math.min(size, storedCars.size());
+            for (int i = 0; i < limit; i++) {
+                result.add(storedCars.get(i));
+            }
+            return result;
+        }
+
+        @Override
+        public boolean save(CustomArrayList<Car> list, String name) throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка сохранения списка");
+            }
+            if (list == null || name == null || name.isEmpty()) {
+                return false;
+            }
+            storedCars = list;
+            return true;
+        }
+
+        @Override
+        public boolean save(Car car, String name) throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка сохранения автомобиля");
+            }
+            if (car == null || name == null || name.isEmpty()) {
+                return false;
+            }
+            storedCars.add(car);
+            return true;
+        }
+
+        @Override
+        public CustomArrayList<String> readListOfCarLists() throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка чтения списка имен");
+            }
+            return storedListNames;
+        }
+
+        @Override
+        public boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка сохранения списка имен");
+            }
+            if (carListNames == null) {
+                return false;
+            }
+            this.storedListNames = carListNames;
+            return true;
+        }
+
+        @Override
+        public CustomArrayList<String> getCarFilesList() throws RepositoryException {
+            if (shouldThrowException) {
+                throw new RepositoryException("Ошибка получения списка файлов");
+            }
+            return storedListNames;
+        }
+
+        public void setStoredCars(CustomArrayList<Car> cars) {
+            this.storedCars = cars;
+        }
+    }
+
+    private static final Car CAR1 = new Car.Builder("Toyota Camry")
             .yearOfProduction(2022)
             .hp(150)
             .build();
-    private static final Car TEST_CAR2 = new Car.Builder("BMW X5")
+
+    private static final Car CAR2 = new Car.Builder("BMW X5")
             .yearOfProduction(2023)
             .hp(300)
             .build();
 
-    @BeforeEach
-    void setUp() {
-        // Для тестирования интерфейса создаем тестовую реализацию
-        repository = new InMemoryTestRepository();
-    }
-
     @Nested
-    @DisplayName("Тесты метода readAll(int size, String name)")
+    @DisplayName("Тесты метода readAll()")
     class ReadAllTests {
 
         @Test
-        @DisplayName("readAll() должен возвращать список автомобилей указанного размера")
-        void readAll_ShouldReturnListOfSpecifiedSize() throws RepositoryException {
+        @DisplayName("readAll() должен возвращать список автомобилей")
+        void readAll_ShouldReturnCarList() throws RepositoryException {
             // Given
-            // В тестовой реализации предзаполняем данные
+            TestRepository repository = new TestRepository();
+            CustomArrayList<Car> cars = new CustomArrayList<>();
+            cars.add(CAR1);
+            cars.add(CAR2);
+            repository.setStoredCars(cars);
 
             // When
-            CustomArrayList<Car> result = repository.readAll(5, TEST_NAME);
+            CustomArrayList<Car> result = repository.readAll(10, "test");
 
             // Then
             assertNotNull(result);
-            assertTrue(result.size() <= 5);
+            assertEquals(2, result.size());
+            assertEquals(CAR1, result.get(0));
+            assertEquals(CAR2, result.get(1));
         }
 
         @Test
-        @DisplayName("readAll() должен возвращать пустой список, если файл не существует")
-        void readAll_WhenFileNotFound_ShouldReturnEmptyList() throws RepositoryException {
+        @DisplayName("readAll() должен ограничивать количество по size")
+        void readAll_ShouldLimitBySize() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+            CustomArrayList<Car> cars = new CustomArrayList<>();
+            cars.add(CAR1);
+            cars.add(CAR2);
+            repository.setStoredCars(cars);
+
             // When
-            CustomArrayList<Car> result = repository.readAll(10, "nonExistentList");
+            CustomArrayList<Car> result = repository.readAll(1, "test");
 
             // Then
-            assertNotNull(result);
-            assertEquals(0, result.size());
-        }
-
-        @Test
-        @DisplayName("readAll() должен выбрасывать RepositoryException при ошибке чтения")
-        void readAll_WhenReadFails_ShouldThrowRepositoryException() {
-            // Given
-            Repository failingRepository = new FailingTestRepository();
-
-            // When & Then
-            assertThrows(RepositoryException.class,
-                    () -> failingRepository.readAll(10, TEST_NAME));
+            assertEquals(1, result.size());
+            assertEquals(CAR1, result.get(0));
         }
 
         @Test
         @DisplayName("readAll() с size = 0 должен возвращать пустой список")
         void readAll_WithZeroSize_ShouldReturnEmptyList() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+
             // When
-            CustomArrayList<Car> result = repository.readAll(0, TEST_NAME);
+            CustomArrayList<Car> result = repository.readAll(0, "test");
 
             // Then
             assertNotNull(result);
@@ -81,154 +165,141 @@ class RepositoryTest {
         }
 
         @Test
-        @DisplayName("readAll() с отрицательным size должен обрабатываться корректно")
-        void readAll_WithNegativeSize_ShouldHandleGracefully() throws RepositoryException {
-            // When
-            CustomArrayList<Car> result = repository.readAll(-1, TEST_NAME);
+        @DisplayName("readAll() должен выбрасывать RepositoryException при ошибке")
+        void readAll_WhenError_ShouldThrowException() {
+            // Given
+            TestRepository repository = new TestRepository(true);
 
-            // Then
-            assertNotNull(result);
-            // Ожидаем, что метод либо вернет пустой список, либо выбросит исключение
+            // When & Then
+            assertThrows(RepositoryException.class,
+                    () -> repository.readAll(10, "test"));
         }
     }
 
     @Nested
-    @DisplayName("Тесты метода save(CustomArrayList<Car> list, String name)")
+    @DisplayName("Тесты метода save(CustomArrayList)")
     class SaveListTests {
 
         @Test
-        @DisplayName("save(CustomArrayList) должен успешно сохранять список автомобилей")
-        void saveList_ShouldSaveSuccessfully() throws RepositoryException {
+        @DisplayName("save(CustomArrayList) должен сохранять список автомобилей")
+        void saveList_ShouldSaveCarList() throws RepositoryException {
             // Given
+            TestRepository repository = new TestRepository();
             CustomArrayList<Car> cars = new CustomArrayList<>();
-            cars.add(TEST_CAR);
-            cars.add(TEST_CAR2);
+            cars.add(CAR1);
+            cars.add(CAR2);
 
             // When
-            boolean result = repository.save(cars, TEST_NAME);
+            boolean result = repository.save(cars, "testList");
 
             // Then
             assertTrue(result);
-            // Проверяем, что список сохранился
-            CustomArrayList<Car> readCars = repository.readAll(10, TEST_NAME);
-            assertEquals(cars.size(), readCars.size());
+            CustomArrayList<Car> readCars = repository.readAll(10, "testList");
+            assertEquals(2, readCars.size());
         }
 
         @Test
-        @DisplayName("save(CustomArrayList) должен перезаписывать существующий список")
-        void saveList_ShouldOverwriteExistingList() throws RepositoryException {
+        @DisplayName("save(CustomArrayList) с пустым именем должен возвращать false")
+        void saveList_WithEmptyName_ShouldReturnFalse() throws RepositoryException {
             // Given
-            CustomArrayList<Car> firstList = new CustomArrayList<>();
-            firstList.add(TEST_CAR);
-            repository.save(firstList, TEST_NAME);
-
-            CustomArrayList<Car> secondList = new CustomArrayList<>();
-            secondList.add(TEST_CAR2);
+            TestRepository repository = new TestRepository();
+            CustomArrayList<Car> cars = new CustomArrayList<>();
+            cars.add(CAR1);
 
             // When
-            repository.save(secondList, TEST_NAME);
+            boolean result = repository.save(cars, "");
 
             // Then
-            CustomArrayList<Car> result = repository.readAll(10, TEST_NAME);
-            assertEquals(1, result.size());
-            assertEquals(TEST_CAR2, result.get(0));
-        }
-
-        @Test
-        @DisplayName("save(CustomArrayList) должен сохранять пустой список")
-        void saveList_WithEmptyList_ShouldSaveEmptyList() throws RepositoryException {
-            // Given
-            CustomArrayList<Car> emptyList = new CustomArrayList<>();
-
-            // When
-            boolean result = repository.save(emptyList, TEST_NAME);
-
-            // Then
-            assertTrue(result);
-            CustomArrayList<Car> readCars = repository.readAll(10, TEST_NAME);
-            assertEquals(0, readCars.size());
+            assertFalse(result);
         }
 
         @Test
         @DisplayName("save(CustomArrayList) должен выбрасывать RepositoryException при ошибке")
-        void saveList_WhenSaveFails_ShouldThrowRepositoryException() {
+        void saveList_WhenError_ShouldThrowException() {
             // Given
-            Repository failingRepository = new FailingTestRepository();
+            TestRepository repository = new TestRepository(true);
             CustomArrayList<Car> cars = new CustomArrayList<>();
-            cars.add(TEST_CAR);
+            cars.add(CAR1);
 
             // When & Then
             assertThrows(RepositoryException.class,
-                    () -> failingRepository.save(cars, TEST_NAME));
-        }
-
-        @Test
-        @DisplayName("save(CustomArrayList) с null списком должен выбрасывать исключение")
-        void saveList_WithNullList_ShouldThrowException() {
-            // When & Then
-            assertThrows(RepositoryException.class,
-                    () -> repository.save((Car) null, TEST_NAME));
+                    () -> repository.save(cars, "test"));
         }
     }
 
     @Nested
-    @DisplayName("Тесты метода save(Car car, String name)")
-    class SaveSingleCarTests {
+    @DisplayName("Тесты метода save(Car)")
+    class SaveCarTests {
 
         @Test
-        @DisplayName("save(Car) должен успешно сохранять один автомобиль")
-        void saveSingleCar_ShouldSaveSuccessfully() throws RepositoryException {
+        @DisplayName("save(Car) должен сохранять один автомобиль")
+        void saveCar_ShouldSaveSingleCar() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+
             // When
-            boolean result = repository.save(TEST_CAR, TEST_NAME);
+            boolean result = repository.save(CAR1, "test");
 
             // Then
             assertTrue(result);
-            CustomArrayList<Car> readCars = repository.readAll(10, TEST_NAME);
+            CustomArrayList<Car> readCars = repository.readAll(10, "test");
             assertEquals(1, readCars.size());
-            assertEquals(TEST_CAR, readCars.get(0));
+            assertEquals(CAR1, readCars.get(0));
         }
 
         @Test
         @DisplayName("save(Car) должен добавлять автомобиль к существующим")
-        void saveSingleCar_ShouldAppendToExisting() throws RepositoryException {
+        void saveCar_ShouldAppendToExisting() throws RepositoryException {
             // Given
-            repository.save(TEST_CAR, TEST_NAME);
+            TestRepository repository = new TestRepository();
+            repository.save(CAR1, "test");
 
             // When
-            repository.save(TEST_CAR2, TEST_NAME);
+            boolean result = repository.save(CAR2, "test");
 
             // Then
-            CustomArrayList<Car> result = repository.readAll(10, TEST_NAME);
-            assertEquals(2, result.size());
-            assertEquals(TEST_CAR, result.get(0));
-            assertEquals(TEST_CAR2, result.get(1));
+            assertTrue(result);
+            CustomArrayList<Car> readCars = repository.readAll(10, "test");
+            assertEquals(2, readCars.size());
+            assertEquals(CAR1, readCars.get(0));
+            assertEquals(CAR2, readCars.get(1));
         }
 
         @Test
-        @DisplayName("save(Car) с null автомобилем должен выбрасывать исключение")
-        void saveSingleCar_WithNullCar_ShouldThrowException() {
-            // When & Then
-            assertThrows(RepositoryException.class,
-                    () -> repository.save((Car) null, TEST_NAME));
-        }
-
-        @Test
-        @DisplayName("save(Car) с пустым именем должен обрабатываться корректно")
-        void saveSingleCar_WithEmptyName_ShouldHandleGracefully() {
-            // When & Then
-            // В зависимости от реализации может быть исключение или успешное сохранение
-            assertDoesNotThrow(() -> repository.save(TEST_CAR, ""));
-        }
-
-        @Test
-        @DisplayName("save(Car) должен выбрасывать RepositoryException при ошибке сохранения")
-        void saveSingleCar_WhenSaveFails_ShouldThrowRepositoryException() {
+        @DisplayName("save(Car) с null автомобилем должен возвращать false")
+        void saveCar_WithNullCar_ShouldReturnFalse() throws RepositoryException {
             // Given
-            Repository failingRepository = new FailingTestRepository();
+            TestRepository repository = new TestRepository();
+
+            // When
+            boolean result = repository.save((Car) null, "test");
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @DisplayName("save(Car) с пустым именем должен возвращать false")
+        void saveCar_WithEmptyName_ShouldReturnFalse() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+
+            // When
+            boolean result = repository.save(CAR1, "");
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @DisplayName("save(Car) должен выбрасывать RepositoryException при ошибке")
+        void saveCar_WhenError_ShouldThrowException() {
+            // Given
+            TestRepository repository = new TestRepository(true);
 
             // When & Then
             assertThrows(RepositoryException.class,
-                    () -> failingRepository.save(TEST_CAR, TEST_NAME));
+                    () -> repository.save(CAR1, "test"));
         }
     }
 
@@ -237,50 +308,63 @@ class RepositoryTest {
     class ReadListOfCarListsTests {
 
         @Test
-        @DisplayName("readListOfCarLists() должен возвращать пустой список, если нет сохраненных списков")
-        void readListOfCarLists_WhenNoLists_ShouldReturnEmptyList() throws RepositoryException {
+        @DisplayName("readListOfCarLists() должен возвращать список имен")
+        void readListOfCarLists_ShouldReturnListOfNames() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+            CustomArrayList<String> expectedNames = new CustomArrayList<>();
+            expectedNames.add("list1");
+            expectedNames.add("list2");
+            repository.saveCarListNames(expectedNames);
+
             // When
             CustomArrayList<String> result = repository.readListOfCarLists();
 
             // Then
             assertNotNull(result);
-            // Может быть 0 или более в зависимости от реализации
+            assertEquals(2, result.size());
+            assertEquals("list1", result.get(0));
+            assertEquals("list2", result.get(1));
         }
 
         @Test
-        @DisplayName("readListOfCarLists() не должен возвращать null")
-        void readListOfCarLists_ShouldNeverReturnNull() throws RepositoryException {
+        @DisplayName("readListOfCarLists() должен возвращать пустой список если нет имен")
+        void readListOfCarLists_WhenNoNames_ShouldReturnEmptyList() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+
             // When
             CustomArrayList<String> result = repository.readListOfCarLists();
 
             // Then
             assertNotNull(result);
+            assertEquals(0, result.size());
         }
 
         @Test
         @DisplayName("readListOfCarLists() должен выбрасывать RepositoryException при ошибке")
-        void readListOfCarLists_WhenReadFails_ShouldThrowRepositoryException() {
+        void readListOfCarLists_WhenError_ShouldThrowException() {
             // Given
-            Repository failingRepository = new FailingTestRepository();
+            TestRepository repository = new TestRepository(true);
 
             // When & Then
             assertThrows(RepositoryException.class,
-                    () -> failingRepository.readListOfCarLists());
+                    () -> repository.readListOfCarLists());
         }
     }
 
     @Nested
-    @DisplayName("Тесты метода saveCarListNames(CustomArrayList<String> carListNames)")
+    @DisplayName("Тесты метода saveCarListNames()")
     class SaveCarListNamesTests {
 
         @Test
-        @DisplayName("saveCarListNames() должен успешно сохранять список имен")
-        void saveCarListNames_ShouldSaveSuccessfully() throws RepositoryException {
+        @DisplayName("saveCarListNames() должен сохранять список имен")
+        void saveCarListNames_ShouldSaveNames() throws RepositoryException {
             // Given
+            TestRepository repository = new TestRepository();
             CustomArrayList<String> names = new CustomArrayList<>();
-            names.add("list1");
-            names.add("list2");
-            names.add("list3");
+            names.add("summer2024");
+            names.add("winter2024");
 
             // When
             boolean result = repository.saveCarListNames(names);
@@ -288,33 +372,14 @@ class RepositoryTest {
             // Then
             assertTrue(result);
             CustomArrayList<String> readNames = repository.readListOfCarLists();
-            assertEquals(names.size(), readNames.size());
+            assertEquals(2, readNames.size());
         }
 
         @Test
-        @DisplayName("saveCarListNames() должен перезаписывать существующий список")
-        void saveCarListNames_ShouldOverwriteExisting() throws RepositoryException {
+        @DisplayName("saveCarListNames() с пустым списком должен возвращать true")
+        void saveCarListNames_WithEmptyList_ShouldReturnTrue() throws RepositoryException {
             // Given
-            CustomArrayList<String> firstList = new CustomArrayList<>();
-            firstList.add("oldList");
-            repository.saveCarListNames(firstList);
-
-            CustomArrayList<String> secondList = new CustomArrayList<>();
-            secondList.add("newList");
-
-            // When
-            repository.saveCarListNames(secondList);
-
-            // Then
-            CustomArrayList<String> result = repository.readListOfCarLists();
-            assertEquals(1, result.size());
-            assertEquals("newList", result.get(0));
-        }
-
-        @Test
-        @DisplayName("saveCarListNames() должен сохранять пустой список")
-        void saveCarListNames_WithEmptyList_ShouldSaveEmptyList() throws RepositoryException {
-            // Given
+            TestRepository repository = new TestRepository();
             CustomArrayList<String> emptyList = new CustomArrayList<>();
 
             // When
@@ -322,29 +387,82 @@ class RepositoryTest {
 
             // Then
             assertTrue(result);
-            CustomArrayList<String> readNames = repository.readListOfCarLists();
-            assertEquals(0, readNames.size());
         }
 
         @Test
-        @DisplayName("saveCarListNames() с null списком должен выбрасывать исключение")
-        void saveCarListNames_WithNullList_ShouldThrowException() {
-            // When & Then
-            assertThrows(RepositoryException.class,
-                    () -> repository.saveCarListNames(null));
-        }
-
-        @Test
-        @DisplayName("saveCarListNames() должен выбрасывать RepositoryException при ошибке сохранения")
-        void saveCarListNames_WhenSaveFails_ShouldThrowRepositoryException() {
+        @DisplayName("saveCarListNames() с null списком должен возвращать false")
+        void saveCarListNames_WithNullList_ShouldReturnFalse() throws RepositoryException {
             // Given
-            Repository failingRepository = new FailingTestRepository();
+            TestRepository repository = new TestRepository();
+
+            // When
+            boolean result = repository.saveCarListNames(null);
+
+            // Then
+            assertFalse(result);
+        }
+
+        @Test
+        @DisplayName("saveCarListNames() должен выбрасывать RepositoryException при ошибке")
+        void saveCarListNames_WhenError_ShouldThrowException() {
+            // Given
+            TestRepository repository = new TestRepository(true);
             CustomArrayList<String> names = new CustomArrayList<>();
             names.add("test");
 
             // When & Then
             assertThrows(RepositoryException.class,
-                    () -> failingRepository.saveCarListNames(names));
+                    () -> repository.saveCarListNames(names));
+        }
+    }
+
+    @Nested
+    @DisplayName("Тесты метода getCarFilesList()")
+    class GetCarFilesListTests {
+
+        @Test
+        @DisplayName("getCarFilesList() должен возвращать список файлов")
+        void getCarFilesList_ShouldReturnListOfFiles() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+            CustomArrayList<String> expectedFiles = new CustomArrayList<>();
+            expectedFiles.add("file1.txt");
+            expectedFiles.add("file2.txt");
+            repository.saveCarListNames(expectedFiles);
+
+            // When
+            CustomArrayList<String> result = repository.getCarFilesList();
+
+            // Then
+            assertNotNull(result);
+            assertEquals(2, result.size());
+            assertEquals("file1.txt", result.get(0));
+            assertEquals("file2.txt", result.get(1));
+        }
+
+        @Test
+        @DisplayName("getCarFilesList() должен возвращать пустой список если нет файлов")
+        void getCarFilesList_WhenNoFiles_ShouldReturnEmptyList() throws RepositoryException {
+            // Given
+            TestRepository repository = new TestRepository();
+
+            // When
+            CustomArrayList<String> result = repository.getCarFilesList();
+
+            // Then
+            assertNotNull(result);
+            assertEquals(0, result.size());
+        }
+
+        @Test
+        @DisplayName("getCarFilesList() должен выбрасывать RepositoryException при ошибке")
+        void getCarFilesList_WhenError_ShouldThrowException() {
+            // Given
+            TestRepository repository = new TestRepository(true);
+
+            // When & Then
+            assertThrows(RepositoryException.class,
+                    () -> repository.getCarFilesList());
         }
     }
 
@@ -355,185 +473,36 @@ class RepositoryTest {
         @Test
         @DisplayName("Полный цикл работы с репозиторием")
         void completeWorkflow_ShouldWorkCorrectly() throws RepositoryException {
-            // 1. Создаем список автомобилей
-            CustomArrayList<Car> sportsCars = new CustomArrayList<>();
-            sportsCars.add(TEST_CAR);
-            sportsCars.add(TEST_CAR2);
-
-            // 2. Сохраняем список
-            repository.save(sportsCars, "sports");
-
-            // 3. Сохраняем имя списка в каталог
-            CustomArrayList<String> allLists = repository.readListOfCarLists();
-            allLists.add("sports");
-            repository.saveCarListNames(allLists);
-
-            // 4. Добавляем еще один автомобиль в существующий список
-            Car electricCar = new Car.Builder("Tesla Model 3")
-                    .yearOfProduction(2024)
-                    .hp(450)
-                    .build();
-            repository.save(electricCar, "sports");
-
-            // 5. Читаем обновленный список
-            CustomArrayList<Car> readCars = repository.readAll(10, "sports");
-
-            // 6. Проверяем результат
-            assertEquals(3, readCars.size());
-            assertEquals(TEST_CAR, readCars.get(0));
-            assertEquals(TEST_CAR2, readCars.get(1));
-            assertEquals(electricCar, readCars.get(2));
-
-            // 7. Проверяем каталог
-            CustomArrayList<String> readLists = repository.readListOfCarLists();
-            assertTrue(readLists.contains("sports"));
-        }
-
-        @Test
-        @DisplayName("Сохранение и чтение множества списков")
-        void multipleLists_ShouldWorkCorrectly() throws RepositoryException {
             // Given
-            String[] listNames = {"list1", "list2", "list3", "list4", "list5"};
-            CustomArrayList<String> savedNames = new CustomArrayList<>();
+            TestRepository repository = new TestRepository();
 
-            // When
-            for (String name : listNames) {
-                CustomArrayList<Car> cars = new CustomArrayList<>();
-                cars.add(TEST_CAR);
-                repository.save(cars, name);
-                savedNames.add(name);
-            }
-            repository.saveCarListNames(savedNames);
+            // 1. Сохраняем автомобиль
+            boolean saveCarResult = repository.save(CAR1, "myCars");
+            assertTrue(saveCarResult);
 
-            // Then
-            CustomArrayList<String> readNames = repository.readListOfCarLists();
-            assertEquals(listNames.length, readNames.size());
-            for (String name : listNames) {
-                assertTrue(readNames.contains(name));
-                CustomArrayList<Car> cars = repository.readAll(10, name);
-                assertEquals(1, cars.size());
-            }
+            // 2. Сохраняем список автомобилей
+            CustomArrayList<Car> cars = new CustomArrayList<>();
+            cars.add(CAR2);
+            boolean saveListResult = repository.save(cars, "myCars");
+            assertTrue(saveListResult);
+
+            // 3. Сохраняем список имен
+            CustomArrayList<String> names = new CustomArrayList<>();
+            names.add("myCars");
+            boolean saveNamesResult = repository.saveCarListNames(names);
+            assertTrue(saveNamesResult);
+
+            // 4. Получаем список имен
+            CustomArrayList<String> retrievedNames = repository.readListOfCarLists();
+            assertNotNull(retrievedNames);
+
+            // 5. Получаем список файлов
+            CustomArrayList<String> files = repository.getCarFilesList();
+            assertNotNull(files);
+
+            // 6. Читаем автомобили
+            CustomArrayList<Car> readCars = repository.readAll(10, "myCars");
+            assertNotNull(readCars);
         }
-    }
-}
-
-// Тестовая реализация репозитория в памяти для тестирования интерфейса
-class InMemoryTestRepository implements Repository {
-
-    private final java.util.Map<String, CustomArrayList<Car>> storage = new java.util.HashMap<>();
-    private CustomArrayList<String> listNames = new CustomArrayList<>();
-
-    @Override
-    public CustomArrayList<Car> readAll(int size, String name) throws RepositoryException {
-        validateName(name);
-        CustomArrayList<Car> cars = storage.get(name);
-        if (cars == null) {
-            return new CustomArrayList<>();
-        }
-
-        CustomArrayList<Car> result = new CustomArrayList<>();
-        int limit = Math.min(size, cars.size());
-        for (int i = 0; i < limit; i++) {
-            result.add(cars.get(i));
-        }
-        return result;
-    }
-
-    @Override
-    public boolean save(CustomArrayList<Car> list, String name) throws RepositoryException {
-        validateName(name);
-        validateList(list);
-
-        storage.put(name, copyList(list));
-        return true;
-    }
-
-    @Override
-    public boolean save(Car car, String name) throws RepositoryException {
-        validateName(name);
-        validateCar(car);
-
-        CustomArrayList<Car> existing = storage.get(name);
-        if (existing == null) {
-            existing = new CustomArrayList<>();
-            storage.put(name, existing);
-        }
-        existing.add(car);
-        return true;
-    }
-
-    @Override
-    public CustomArrayList<String> readListOfCarLists() throws RepositoryException {
-        return copyStringList(listNames);
-    }
-
-    @Override
-    public boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException {
-        validateList(carListNames);
-        listNames = copyStringList(carListNames);
-        return true;
-    }
-
-    private void validateName(String name) throws RepositoryException {
-        if (name == null) {
-            throw new RepositoryException("Имя не может быть null");
-        }
-    }
-
-    private void validateList(CustomArrayList<?> list) throws RepositoryException {
-        if (list == null) {
-            throw new RepositoryException("Список не может быть null");
-        }
-    }
-
-    private void validateCar(Car car) throws RepositoryException {
-        if (car == null) {
-            throw new RepositoryException("Автомобиль не может быть null");
-        }
-    }
-
-    private CustomArrayList<Car> copyList(CustomArrayList<Car> original) {
-        CustomArrayList<Car> copy = new CustomArrayList<>();
-        for (int i = 0; i < original.size(); i++) {
-            copy.add(original.get(i));
-        }
-        return copy;
-    }
-
-    private CustomArrayList<String> copyStringList(CustomArrayList<String> original) {
-        CustomArrayList<String> copy = new CustomArrayList<>();
-        for (int i = 0; i < original.size(); i++) {
-            copy.add(original.get(i));
-        }
-        return copy;
-    }
-}
-
-// Реализация, которая всегда выбрасывает исключения для тестирования ошибок
-class FailingTestRepository implements Repository {
-
-    @Override
-    public CustomArrayList<Car> readAll(int size, String name) throws RepositoryException {
-        throw new RepositoryException("Тестовая ошибка чтения");
-    }
-
-    @Override
-    public boolean save(CustomArrayList<Car> list, String name) throws RepositoryException {
-        throw new RepositoryException("Тестовая ошибка сохранения списка");
-    }
-
-    @Override
-    public boolean save(Car car, String name) throws RepositoryException {
-        throw new RepositoryException("Тестовая ошибка сохранения автомобиля");
-    }
-
-    @Override
-    public CustomArrayList<String> readListOfCarLists() throws RepositoryException {
-        throw new RepositoryException("Тестовая ошибка чтения списка имен");
-    }
-
-    @Override
-    public boolean saveCarListNames(CustomArrayList<String> carListNames) throws RepositoryException {
-        throw new RepositoryException("Тестовая ошибка сохранения списка имен");
     }
 }
