@@ -28,11 +28,6 @@ class ArraySortedTest {
         public boolean wasCalled() { return wasCalled; }
         public CustomArrayList<Car> getLastList() { return lastList; }
         public Comparator<Car> getLastComparator() { return lastComparator; }
-        public void reset() {
-            wasCalled = false;
-            lastList = null;
-            lastComparator = null;
-        }
     }
 
     private static final Car CAR1 = new Car.Builder("BMW")
@@ -236,23 +231,6 @@ class ArraySortedTest {
             // Then
             assertTrue(strategy.wasCalled());
             assertEquals(100, strategy.getLastList().size());
-        }
-    }
-}
-
-// Простая реализация SortStrategy для тестов
-class SimpleSortStrategy implements SortStrategy {
-    @Override
-    public void sort(CustomArrayList<Car> car, Comparator<Car> comparator) {
-        // Простая пузырьковая сортировка для тестов
-        for (int i = 0; i < car.size() - 1; i++) {
-            for (int j = 0; j < car.size() - i - 1; j++) {
-                if (comparator.compare(car.get(j), car.get(j + 1)) > 0) {
-                    Car temp = car.get(j);
-                    car.set(j, car.get(j + 1));
-                    car.set(j + 1, temp);
-                }
-            }
         }
     }
 }
