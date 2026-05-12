@@ -280,7 +280,7 @@ public class Main {
       case 5:
         comparator = CarComparator.byYear();
         sortStrategy = new EvenOddNumberSort(Car::getYearOfProduction);
-        System.out.println("Сортировка по году (чётные значения в начало)...");
+        System.out.println("Сортировка по году производства (чётные значения в начало)...");
         break;
       default:
         System.out.println("Неверный выбор!");
