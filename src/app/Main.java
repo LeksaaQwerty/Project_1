@@ -45,6 +45,9 @@ public class Main {
           saveToFile();
           break;
         case 5:
+          searchByParam();
+          break;
+        case 6:
           System.out.println("До свидания!");
           System.exit(0);
         default:
@@ -59,7 +62,8 @@ public class Main {
     System.out.println("2. Сортировать автомобили");
     System.out.println("3. Показать все автомобили");
     System.out.println("4. Сохранить в файл");
-    System.out.println("5. Выход");
+    System.out.println("5. Поиск по параметрам");
+    System.out.println("6. Выход");
   }
 
   private static int getIntInput(String prompt) {
@@ -292,5 +296,84 @@ public class Main {
 
     System.out.println("Сортировка завершена!");
     displayCars();
+  }
+
+  private static void searchByParam() {
+    System.out.println("\n=== Поиск по параметрам ===");
+    System.out.println("1. Название модели");
+    System.out.println("2. Мощность");
+    System.out.println("3. Год выпуска");
+
+    int choice = 0;
+    while (choice < 1 || choice > 3) {
+      choice = getIntInput("Выберите способ: ");
+    }
+
+    switch (choice) {
+      case 1:
+        searchByParamModel();
+        break;
+      case 2:
+        searchByParamHp();
+        break;
+      case 3:
+        searchByParamYear();
+        break;
+    }
+  }
+
+  private static void searchByParamModel() {
+    System.out.print("Введите название модели: ");
+    String choice = scanner.nextLine();
+
+    CustomArrayList<Car> foundCars = new CustomArrayList<>();
+    for (Car c : currentCars) {
+      if (c == null)
+        break;
+      if (c.getModel().contains(choice)) {
+        foundCars.add(c);
+      }
+    }
+
+    System.out.println("Найдено " + foundCars.size() + " авто: ");
+    System.out.println(foundCars.toString());
+  }
+
+  private static void searchByParamHp() {
+    int choice = -1;
+    while (choice < Car.MIN_HP || choice > Car.MAX_HP) {
+      choice = getIntInput("Введите мощность: ");
+    }
+
+    CustomArrayList<Car> foundCars = new CustomArrayList<>();
+    for (Car c : currentCars) {
+      if (c == null)
+        break;
+      if (c.getHp() == choice) {
+        foundCars.add(c);
+      }
+    }
+
+    System.out.println("Найдено " + foundCars.size() + " авто: ");
+    System.out.println(foundCars.toString());
+  }
+
+  private static void searchByParamYear() {
+    int choice = -1;
+    while (choice < Car.MIN_YEAR_OF_PRODUCTION || choice > Car.MAX_YEAR_OF_PRODUCTION) {
+      choice = getIntInput("Введите год выпуска: ");
+    }
+
+    CustomArrayList<Car> foundCars = new CustomArrayList<>();
+    for (Car c : currentCars) {
+      if (c == null)
+        break;
+      if (c.getYearOfProduction() == choice) {
+        foundCars.add(c);
+      }
+    }
+
+    System.out.println("Найдено " + foundCars.size() + " авто: ");
+    System.out.println(foundCars.toString());
   }
 }

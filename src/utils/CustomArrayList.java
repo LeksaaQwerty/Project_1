@@ -1,211 +1,219 @@
 package utils;
 
-public class CustomArrayList<T> {
+import java.util.Arrays;
+import java.util.Iterator;
 
-	private T[] array;
-	private int size;
+public class CustomArrayList<T> implements Iterable<T> {
 
-	@SuppressWarnings("unchecked")
-	public CustomArrayList() {
-		this.array = (T[]) new Object[8];
-		this.size = 0;
-	}
+  private T[] array;
+  private int size;
 
-	/*
-	 * метод добавляет элемент в конец массива
-	 */
-	public boolean add(T t) {
-		if (size < array.length) {
-			array[size] = t;
-			size++;
-			return true;
-		}
-		increaseArray();
-		array[size] = t;
-		size++;
-		return true;
-	}
+  @SuppressWarnings("unchecked")
+  public CustomArrayList() {
+    this.array = (T[]) new Object[8];
+    this.size = 0;
+  }
 
-	/*
-	 * метод добавляет элемент в указанный индекс, элементы справа сдвигаются
-	 */
-	public boolean add(int index, T t) {
-		if (index < 0 || index > size) {
-			return false;
-		}
-		if (size < this.array.length) {
-			shiftArray(index);
-			this.array[index] = t;
-			size++;
-			return true;
-		}
-		if (size >= this.array.length) {
-			increaseAndShift(index);
-			this.array[index] = t;
-			size++;
-			return true;
-		}
-		return true;
-	}
+  @Override
+  public Iterator<T> iterator() {
+    return Arrays.asList(array).iterator();
+  }
 
-	/*
-	 * метод сохраняет элемент в указанный индекс, предыдущие данные по этому
-	 * индексу затираются
-	 */
-	public boolean set(int index, T t) {
-		if (index < 0 || index >= size) {
-			return false;
-		}
-		array[index] = t;
-		return true;
-	}
+  /*
+   * метод добавляет элемент в конец массива
+   */
+  public boolean add(T t) {
+    if (size < array.length) {
+      array[size] = t;
+      size++;
+      return true;
+    }
+    increaseArray();
+    array[size] = t;
+    size++;
+    return true;
+  }
 
-	public boolean delete(int index) {
-		if (index < 0 || index >= size) {
-			return false;
-		}
-		reverseShift(index);
-		size--;
-		return true;
-	}
+  /*
+   * метод добавляет элемент в указанный индекс, элементы справа сдвигаются
+   */
+  public boolean add(int index, T t) {
+    if (index < 0 || index > size) {
+      return false;
+    }
+    if (size < this.array.length) {
+      shiftArray(index);
+      this.array[index] = t;
+      size++;
+      return true;
+    }
+    if (size >= this.array.length) {
+      increaseAndShift(index);
+      this.array[index] = t;
+      size++;
+      return true;
+    }
+    return true;
+  }
 
-	/*
-	 * метод получает объект и удаляет один первый совпавший элемент
-	 */
-	public boolean deleteFirst(T t) {
-		for (int i = 0; i < size; i++) {
-			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
-				delete(i);
-				return true;
-			}
-		}
-		return false;
-	}
+  /*
+   * метод сохраняет элемент в указанный индекс, предыдущие данные по этому
+   * индексу затираются
+   */
+  public boolean set(int index, T t) {
+    if (index < 0 || index >= size) {
+      return false;
+    }
+    array[index] = t;
+    return true;
+  }
 
-	/*
-	 * метод получает объект и удаляет все совпавшие элементы
-	 */
-	public boolean deleteAll(T t) {
-		int counter = 0;
-		for (int i = 0; i < size; i++) {
-			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
-				delete(i);
-				counter++;
-				i--;
-			}
-		}
-		if (counter > 0) {
-			return true;
-		}
-		return false;
-	}
+  public boolean delete(int index) {
+    if (index < 0 || index >= size) {
+      return false;
+    }
+    reverseShift(index);
+    size--;
+    return true;
+  }
 
-	/*
-	 * метод очищает массив путём создания нового пустого массива
-	 */
-	@SuppressWarnings("unchecked")
-	public CustomArrayList<T> clear() {
-		this.array = (T[]) new Object[array.length];
-		this.size = 0;
-		return this;
-	}
+  /*
+   * метод получает объект и удаляет один первый совпавший элемент
+   */
+  public boolean deleteFirst(T t) {
+    for (int i = 0; i < size; i++) {
+      if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
+        delete(i);
+        return true;
+      }
+    }
+    return false;
+  }
 
-	/*
-	 * метод возвращает элемент по указанному индексу
-	 */
-	public T get(int index) {
-		if (index >= 0 && index < size) {
-			return array[index];
-		}
-		throw new IndexOutOfBoundsException("Poterjalosja");
-	}
+  /*
+   * метод получает объект и удаляет все совпавшие элементы
+   */
+  public boolean deleteAll(T t) {
+    int counter = 0;
+    for (int i = 0; i < size; i++) {
+      if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
+        delete(i);
+        counter++;
+        i--;
+      }
+    }
+    if (counter > 0) {
+      return true;
+    }
+    return false;
+  }
 
-	/*
-	 * метод получает объект и проверяет существуют ли такие объекты в массиве
-	 */
-	public boolean contains(T t) {
-		for (int i = 0; i < size; i++) {
-			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
-				return true;
-			}
-		}
-		return false;
-	}
+  /*
+   * метод очищает массив путём создания нового пустого массива
+   */
+  @SuppressWarnings("unchecked")
+  public CustomArrayList<T> clear() {
+    this.array = (T[]) new Object[array.length];
+    this.size = 0;
+    return this;
+  }
 
-	/*
-	 * метод получает объект и если такой же объект существует в массиве, возвращает
-	 * индекс самого первого его расположения, иначе возвращает -1
-	 */
-	public int indexOf(T t) {
+  /*
+   * метод возвращает элемент по указанному индексу
+   */
+  public T get(int index) {
+    if (index >= 0 && index < size) {
+      return array[index];
+    }
+    throw new IndexOutOfBoundsException("Poterjalosja");
+  }
 
-		for (int i = 0; i < size; i++) {
-			if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
-				return i;
-			}
-		}
-		return -1;
-	}
+  /*
+   * метод получает объект и проверяет существуют ли такие объекты в массиве
+   */
+  public boolean contains(T t) {
+    for (int i = 0; i < size; i++) {
+      if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-	/*
-	 * метод возвращает количество объектов в массиве
-	 */
-	public int size() {
-		return size;
-	}
+  /*
+   * метод получает объект и если такой же объект существует в массиве, возвращает
+   * индекс самого первого его расположения, иначе возвращает -1
+   */
+  public int indexOf(T t) {
 
-	/*
-	 * метод возвращает информацию о том пустой массив или не пустой
-	 */
-	public boolean isEmpty() {
-		return size == 0;
-	}
+    for (int i = 0; i < size; i++) {
+      if ((t == null && array[i] == null) || (t != null && array[i] != null && array[i].equals(t))) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("[");
-		for (int i = 0; i < size; i++) {
-			sb.append(array[i]);
-			if (i < size - 1)
-				sb.append(", ");
-		}
-		sb.append("]");
-		return sb.toString();
-	}
+  /*
+   * метод возвращает количество объектов в массиве
+   */
+  public int size() {
+    return size;
+  }
 
-	private void increaseArray() {
+  /*
+   * метод возвращает информацию о том пустой массив или не пустой
+   */
+  public boolean isEmpty() {
+    return size == 0;
+  }
 
-		@SuppressWarnings("unchecked")
-		T[] newArray = (T[]) new Object[this.array.length * 2];
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < size; i++) {
+      sb.append(array[i]);
+      if (i < size - 1)
+        sb.append(", ");
+    }
+    sb.append("]");
+    return sb.toString();
+  }
 
-		for (int i = 0; i < size; i++) {
-			newArray[i] = this.array[i];
-		}
-		this.array = newArray;
-	}
+  private void increaseArray() {
 
-	private void shiftArray(int index) {
-		for (int i = size - 1; i >= index; i--) {
-			this.array[i + 1] = this.array[i];
-		}
-	}
+    @SuppressWarnings("unchecked")
+    T[] newArray = (T[]) new Object[this.array.length * 2];
 
-	@SuppressWarnings("unchecked")
-	private void increaseAndShift(int index) {
+    for (int i = 0; i < size; i++) {
+      newArray[i] = this.array[i];
+    }
+    this.array = newArray;
+  }
 
-		T[] newArray = (T[]) new Object[array.length * 2];
-		for (int i = 0; i < index; i++) {
-			newArray[i] = this.array[i];
-		}
-		for (int k = index + 1; k < size + 1; k++) {
-			newArray[k] = this.array[k - 1];
-		}
-		this.array = newArray;
-	}
+  private void shiftArray(int index) {
+    for (int i = size - 1; i >= index; i--) {
+      this.array[i + 1] = this.array[i];
+    }
+  }
 
-	private void reverseShift(int index) {
-		for (int i = index; i < size - 1; i++) {
-			array[i] = array[i + 1];
-		}
-		array[size - 1] = null;
-	}
+  @SuppressWarnings("unchecked")
+  private void increaseAndShift(int index) {
+
+    T[] newArray = (T[]) new Object[array.length * 2];
+    for (int i = 0; i < index; i++) {
+      newArray[i] = this.array[i];
+    }
+    for (int k = index + 1; k < size + 1; k++) {
+      newArray[k] = this.array[k - 1];
+    }
+    this.array = newArray;
+  }
+
+  private void reverseShift(int index) {
+    for (int i = index; i < size - 1; i++) {
+      array[i] = array[i + 1];
+    }
+    array[size - 1] = null;
+  }
 }
