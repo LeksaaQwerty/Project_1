@@ -1,5 +1,7 @@
 package app;
 
+import java.util.Comparator;
+import java.util.Scanner;
 import model.Car;
 import service.CarServiceImpl;
 import service.ServiceException;
@@ -13,9 +15,6 @@ import service.sort.EvenOddNumberSort;
 import service.sort.SelectionSort;
 import service.sort.SortStrategy;
 import utils.CustomArrayList;
-
-import java.util.Comparator;
-import java.util.Scanner;
 
 public class Main {
 
@@ -110,7 +109,10 @@ public class Main {
     }
 
     try {
-      currentCars = fillingStrategy.fillOut(size, null);
+      // Получаем новые данные
+      CustomArrayList<Car> newCars = fillingStrategy.fillOut(size, null);
+      currentCars.addAll(newCars);
+
       System.out.println("Успешно создано " + currentCars.size() + " автомобилей!");
       displayCars();
     } catch (ServiceException e) {
@@ -175,7 +177,7 @@ public class Main {
       if (loadedCars.isEmpty()) {
         System.out.println("Файл пуст или не содержит корректных данных.");
       } else {
-        currentCars = loadedCars;
+        currentCars.addAll(loadedCars);
         currentFileName = fileName;
         System.out.println("Загружено " + currentCars.size() + " автомобилей.");
         displayCars();
