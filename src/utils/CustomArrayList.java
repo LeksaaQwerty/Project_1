@@ -34,6 +34,25 @@ public class CustomArrayList<T> implements Iterable<T> {
     return true;
   }
 
+  public boolean addAll(CustomArrayList<T> t) {
+      if (t == null || t.isEmpty()) {
+          return false;
+      }
+
+      int otherSize = t.size();
+
+      while (size + otherSize > array.length) {
+          increaseArray();
+      }
+
+      for (int i = 0; i < otherSize; i++) {
+          this.array[size] = t.get(i);
+          size++;
+      }
+
+      return true;
+  }
+
   /*
    * метод добавляет элемент в указанный индекс, элементы справа сдвигаются
    */
