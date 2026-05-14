@@ -12,6 +12,9 @@ import service.sort.CarComparator;
 import service.sort.EvenOddNumberSort;
 import service.sort.SelectionSort;
 import service.sort.SortStrategy;
+import utils.CarFinderByHp;
+import utils.CarFinderByModel;
+import utils.CarFinderByYear;
 import utils.CustomArrayList;
 
 import java.util.Comparator;
@@ -326,17 +329,18 @@ public class Main {
     System.out.print("Введите название модели: ");
     String choice = scanner.nextLine();
 
-    CustomArrayList<Car> foundCars = new CustomArrayList<>();
-    for (Car c : currentCars) {
-      if (c == null)
-        break;
-      if (c.getModel().contains(choice)) {
-        foundCars.add(c);
-      }
-    }
+    try {
+      CarFinderByModel finder = new CarFinderByModel(currentCars, choice);
+      finder.run();
+      finder.join();
 
-    System.out.println("Найдено " + foundCars.size() + " авто: ");
-    System.out.println(foundCars.toString());
+      CustomArrayList<Car> foundCars = finder.getResult();
+      System.out.println("Найдено " + foundCars.size() + " авто: ");
+      System.out.println(foundCars.toString());
+    } catch (InterruptedException e) {
+      System.out.println("Ошибка поиска!");
+      return;
+    }
   }
 
   private static void searchByParamHp() {
@@ -345,17 +349,18 @@ public class Main {
       choice = getIntInput("Введите мощность: ");
     }
 
-    CustomArrayList<Car> foundCars = new CustomArrayList<>();
-    for (Car c : currentCars) {
-      if (c == null)
-        break;
-      if (c.getHp() == choice) {
-        foundCars.add(c);
-      }
-    }
+    try {
+      CarFinderByHp finder = new CarFinderByHp(currentCars, choice);
+      finder.run();
+      finder.join();
 
-    System.out.println("Найдено " + foundCars.size() + " авто: ");
-    System.out.println(foundCars.toString());
+      CustomArrayList<Car> foundCars = finder.getResult();
+      System.out.println("Найдено " + foundCars.size() + " авто: ");
+      System.out.println(foundCars.toString());
+    } catch (InterruptedException e) {
+      System.out.println("Ошибка поиска!");
+      return;
+    }
   }
 
   private static void searchByParamYear() {
@@ -364,16 +369,17 @@ public class Main {
       choice = getIntInput("Введите год выпуска: ");
     }
 
-    CustomArrayList<Car> foundCars = new CustomArrayList<>();
-    for (Car c : currentCars) {
-      if (c == null)
-        break;
-      if (c.getYearOfProduction() == choice) {
-        foundCars.add(c);
-      }
-    }
+    try {
+      CarFinderByYear finder = new CarFinderByYear(currentCars, choice);
+      finder.run();
+      finder.join();
 
-    System.out.println("Найдено " + foundCars.size() + " авто: ");
-    System.out.println(foundCars.toString());
+      CustomArrayList<Car> foundCars = finder.getResult();
+      System.out.println("Найдено " + foundCars.size() + " авто: ");
+      System.out.println(foundCars.toString());
+    } catch (InterruptedException e) {
+      System.out.println("Ошибка поиска!");
+      return;
+    }
   }
 }
